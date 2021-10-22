@@ -28,9 +28,11 @@ interface NFTTicketInterface extends ethers.utils.Interface {
     "baseURI()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getBaseSettings()": FunctionFragment;
-    "initialize(string,uint160,uint48[],uint160[])": FunctionFragment;
+    "initialize(string,uint256,uint48[],uint160[])": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isInit()": FunctionFragment;
+    "maxPurchase()": FunctionFragment;
+    "maxSupply()": FunctionFragment;
     "mintToken(uint8[],uint256[])": FunctionFragment;
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -40,8 +42,8 @@ interface NFTTicketInterface extends ethers.utils.Interface {
     "released(address)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
+    "saleStart()": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "settings()": FunctionFragment;
     "shares(address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
@@ -53,6 +55,7 @@ interface NFTTicketInterface extends ethers.utils.Interface {
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "typeOfNFT()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -79,6 +82,11 @@ interface NFTTicketInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "isInit", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "maxPurchase",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "maxSupply", values?: undefined): string;
+  encodeFunctionData(
     functionFragment: "mintToken",
     values: [BigNumberish[], BigNumberish[]]
   ): string;
@@ -99,11 +107,11 @@ interface NFTTicketInterface extends ethers.utils.Interface {
     functionFragment: "safeTransferFrom",
     values: [string, string, BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "saleStart", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
   ): string;
-  encodeFunctionData(functionFragment: "settings", values?: undefined): string;
   encodeFunctionData(functionFragment: "shares", values: [string]): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -142,6 +150,7 @@ interface NFTTicketInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(functionFragment: "typeOfNFT", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
@@ -160,6 +169,11 @@ interface NFTTicketInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "isInit", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "maxPurchase",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "maxSupply", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintToken", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -175,11 +189,11 @@ interface NFTTicketInterface extends ethers.utils.Interface {
     functionFragment: "safeTransferFrom",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "saleStart", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "settings", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "shares", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
@@ -215,6 +229,7 @@ interface NFTTicketInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "typeOfNFT", data: BytesLike): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
@@ -333,15 +348,15 @@ export class NFTTicket extends Contract {
 
     initialize(
       baseURI_: string,
-      startTimestamp_: BigNumberish,
+      saleStart_: BigNumberish,
       ticketAmounts_: BigNumberish[],
       ticketPrices_: BigNumberish[],
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "initialize(string,uint160,uint48[],uint160[])"(
+    "initialize(string,uint256,uint48[],uint160[])"(
       baseURI_: string,
-      startTimestamp_: BigNumberish,
+      saleStart_: BigNumberish,
       ticketAmounts_: BigNumberish[],
       ticketPrices_: BigNumberish[],
       overrides?: Overrides
@@ -373,6 +388,30 @@ export class NFTTicket extends Contract {
       overrides?: CallOverrides
     ): Promise<{
       0: boolean;
+    }>;
+
+    maxPurchase(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: BigNumber;
+    }>;
+
+    "maxPurchase()"(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: BigNumber;
+    }>;
+
+    maxSupply(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: number;
+    }>;
+
+    "maxSupply()"(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: number;
     }>;
 
     mintToken(
@@ -482,6 +521,18 @@ export class NFTTicket extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    saleStart(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: BigNumber;
+    }>;
+
+    "saleStart()"(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: BigNumber;
+    }>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -493,32 +544,6 @@ export class NFTTicket extends Contract {
       approved: boolean,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
-
-    settings(
-      overrides?: CallOverrides
-    ): Promise<{
-      maxSupply: number;
-      maxPurchase: number;
-      typeOfNFT: number;
-      startTimestamp: BigNumber;
-      0: number;
-      1: number;
-      2: number;
-      3: BigNumber;
-    }>;
-
-    "settings()"(
-      overrides?: CallOverrides
-    ): Promise<{
-      maxSupply: number;
-      maxPurchase: number;
-      typeOfNFT: number;
-      startTimestamp: BigNumber;
-      0: number;
-      1: number;
-      2: number;
-      3: BigNumber;
-    }>;
 
     shares(
       account: string,
@@ -665,6 +690,18 @@ export class NFTTicket extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    typeOfNFT(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: number;
+    }>;
+
+    "typeOfNFT()"(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: number;
+    }>;
   };
 
   approve(
@@ -728,15 +765,15 @@ export class NFTTicket extends Contract {
 
   initialize(
     baseURI_: string,
-    startTimestamp_: BigNumberish,
+    saleStart_: BigNumberish,
     ticketAmounts_: BigNumberish[],
     ticketPrices_: BigNumberish[],
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "initialize(string,uint160,uint48[],uint160[])"(
+  "initialize(string,uint256,uint48[],uint160[])"(
     baseURI_: string,
-    startTimestamp_: BigNumberish,
+    saleStart_: BigNumberish,
     ticketAmounts_: BigNumberish[],
     ticketPrices_: BigNumberish[],
     overrides?: Overrides
@@ -757,6 +794,14 @@ export class NFTTicket extends Contract {
   isInit(overrides?: CallOverrides): Promise<boolean>;
 
   "isInit()"(overrides?: CallOverrides): Promise<boolean>;
+
+  maxPurchase(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "maxPurchase()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  maxSupply(overrides?: CallOverrides): Promise<number>;
+
+  "maxSupply()"(overrides?: CallOverrides): Promise<number>;
 
   mintToken(
     levels: BigNumberish[],
@@ -825,6 +870,10 @@ export class NFTTicket extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  saleStart(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "saleStart()"(overrides?: CallOverrides): Promise<BigNumber>;
+
   setApprovalForAll(
     operator: string,
     approved: boolean,
@@ -836,32 +885,6 @@ export class NFTTicket extends Contract {
     approved: boolean,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
-
-  settings(
-    overrides?: CallOverrides
-  ): Promise<{
-    maxSupply: number;
-    maxPurchase: number;
-    typeOfNFT: number;
-    startTimestamp: BigNumber;
-    0: number;
-    1: number;
-    2: number;
-    3: BigNumber;
-  }>;
-
-  "settings()"(
-    overrides?: CallOverrides
-  ): Promise<{
-    maxSupply: number;
-    maxPurchase: number;
-    typeOfNFT: number;
-    startTimestamp: BigNumber;
-    0: number;
-    1: number;
-    2: number;
-    3: BigNumber;
-  }>;
 
   shares(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -949,6 +972,10 @@ export class NFTTicket extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  typeOfNFT(overrides?: CallOverrides): Promise<number>;
+
+  "typeOfNFT()"(overrides?: CallOverrides): Promise<number>;
+
   callStatic: {
     approve(
       to: string,
@@ -1011,15 +1038,15 @@ export class NFTTicket extends Contract {
 
     initialize(
       baseURI_: string,
-      startTimestamp_: BigNumberish,
+      saleStart_: BigNumberish,
       ticketAmounts_: BigNumberish[],
       ticketPrices_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "initialize(string,uint160,uint48[],uint160[])"(
+    "initialize(string,uint256,uint48[],uint160[])"(
       baseURI_: string,
-      startTimestamp_: BigNumberish,
+      saleStart_: BigNumberish,
       ticketAmounts_: BigNumberish[],
       ticketPrices_: BigNumberish[],
       overrides?: CallOverrides
@@ -1040,6 +1067,14 @@ export class NFTTicket extends Contract {
     isInit(overrides?: CallOverrides): Promise<boolean>;
 
     "isInit()"(overrides?: CallOverrides): Promise<boolean>;
+
+    maxPurchase(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "maxPurchase()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxSupply(overrides?: CallOverrides): Promise<number>;
+
+    "maxSupply()"(overrides?: CallOverrides): Promise<number>;
 
     mintToken(
       levels: BigNumberish[],
@@ -1108,6 +1143,10 @@ export class NFTTicket extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    saleStart(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "saleStart()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -1119,32 +1158,6 @@ export class NFTTicket extends Contract {
       approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    settings(
-      overrides?: CallOverrides
-    ): Promise<{
-      maxSupply: number;
-      maxPurchase: number;
-      typeOfNFT: number;
-      startTimestamp: BigNumber;
-      0: number;
-      1: number;
-      2: number;
-      3: BigNumber;
-    }>;
-
-    "settings()"(
-      overrides?: CallOverrides
-    ): Promise<{
-      maxSupply: number;
-      maxPurchase: number;
-      typeOfNFT: number;
-      startTimestamp: BigNumber;
-      0: number;
-      1: number;
-      2: number;
-      3: BigNumber;
-    }>;
 
     shares(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1234,6 +1247,10 @@ export class NFTTicket extends Contract {
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    typeOfNFT(overrides?: CallOverrides): Promise<number>;
+
+    "typeOfNFT()"(overrides?: CallOverrides): Promise<number>;
   };
 
   filters: {
@@ -1307,15 +1324,15 @@ export class NFTTicket extends Contract {
 
     initialize(
       baseURI_: string,
-      startTimestamp_: BigNumberish,
+      saleStart_: BigNumberish,
       ticketAmounts_: BigNumberish[],
       ticketPrices_: BigNumberish[],
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "initialize(string,uint160,uint48[],uint160[])"(
+    "initialize(string,uint256,uint48[],uint160[])"(
       baseURI_: string,
-      startTimestamp_: BigNumberish,
+      saleStart_: BigNumberish,
       ticketAmounts_: BigNumberish[],
       ticketPrices_: BigNumberish[],
       overrides?: Overrides
@@ -1336,6 +1353,14 @@ export class NFTTicket extends Contract {
     isInit(overrides?: CallOverrides): Promise<BigNumber>;
 
     "isInit()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxPurchase(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "maxPurchase()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "maxSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     mintToken(
       levels: BigNumberish[],
@@ -1407,6 +1432,10 @@ export class NFTTicket extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    saleStart(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "saleStart()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -1418,10 +1447,6 @@ export class NFTTicket extends Contract {
       approved: boolean,
       overrides?: Overrides
     ): Promise<BigNumber>;
-
-    settings(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "settings()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     shares(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1511,6 +1536,10 @@ export class NFTTicket extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
+
+    typeOfNFT(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "typeOfNFT()"(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1558,15 +1587,15 @@ export class NFTTicket extends Contract {
 
     initialize(
       baseURI_: string,
-      startTimestamp_: BigNumberish,
+      saleStart_: BigNumberish,
       ticketAmounts_: BigNumberish[],
       ticketPrices_: BigNumberish[],
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "initialize(string,uint160,uint48[],uint160[])"(
+    "initialize(string,uint256,uint48[],uint160[])"(
       baseURI_: string,
-      startTimestamp_: BigNumberish,
+      saleStart_: BigNumberish,
       ticketAmounts_: BigNumberish[],
       ticketPrices_: BigNumberish[],
       overrides?: Overrides
@@ -1587,6 +1616,14 @@ export class NFTTicket extends Contract {
     isInit(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "isInit()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    maxPurchase(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "maxPurchase()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "maxSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mintToken(
       levels: BigNumberish[],
@@ -1667,6 +1704,10 @@ export class NFTTicket extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    saleStart(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "saleStart()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -1678,10 +1719,6 @@ export class NFTTicket extends Contract {
       approved: boolean,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
-
-    settings(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "settings()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     shares(
       account: string,
@@ -1774,5 +1811,9 @@ export class NFTTicket extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
+
+    typeOfNFT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "typeOfNFT()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

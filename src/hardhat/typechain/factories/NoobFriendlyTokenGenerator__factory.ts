@@ -56,6 +56,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "newSlottingFee",
+        type: "uint256",
+      },
+    ],
+    name: "changeSlottingFee",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "client",
         type: "address",
@@ -151,19 +164,6 @@ const _abi = [
       },
     ],
     name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "newSlottingFee",
-        type: "uint256",
-      },
-    ],
-    name: "updateSlottingFee",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
