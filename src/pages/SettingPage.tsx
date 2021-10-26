@@ -14,7 +14,7 @@ function SettingPage(props: Props) {
     const address = props.match.params.address;
     
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',marginTop:'30px'}}>
             <InitStepBlindBox address={address}/>
         </div>
     );
