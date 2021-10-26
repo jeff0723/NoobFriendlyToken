@@ -15,7 +15,7 @@ interface Props extends RouteComponentProps<MatchParams> {
 
 const MintPage: React.FC<Props> = (props) => {
     const address = props.match.params.address;
-    const currentAddress = useContext(CurrentAddressContext);
+    const [currentAddress,] = useContext(CurrentAddressContext);
     const provider = useContext(ProviderContext)
     const blindBox = useContext(NFTBlindboxContext);
     const [blindboxContract, setBlindBoxContract] = useState<NFTBlindbox>();
@@ -33,18 +33,19 @@ const MintPage: React.FC<Props> = (props) => {
         const connectToContract = async () => {
             if (!blindBox.factory || !provider || !currentAddress) return
             const contract = blindBox.factory.attach(address);
-            const _balance = await contract.balanceOf(currentAddress[0]);
+            const _balance = await contract.balanceOf(currentAddress);
             const _settings = await contract.settings();
+            const _blindboxSettings = await contract.blindboxSettings();
             const _maxSupply = _settings.maxSupply;
-            const _totalSupply = await contract.totalSupply();
+            const _totalSupply = _settings.totalSupply;
             const _maxPurchase = _settings.maxPurchase;
             const _saleStart = _settings.startTimestamp;
-            const _tokenPrice = await contract.tokenPrice();
+            const _tokenPrice = _blindboxSettings.tokenPrice;
             setBlindBoxContract(contract);
             setName(await contract.name());
             setSymbol(await contract.symbol());
             setBalance(_balance.toNumber());
-            setTotalSupply(_totalSupply.toNumber());
+            setTotalSupply(_totalSupply);
             setMaxSupply(_maxSupply);
             setMaxPurchase(_maxPurchase);
             setTokenPrice(+ethers.utils.formatEther(_tokenPrice))
@@ -69,7 +70,11 @@ const MintPage: React.FC<Props> = (props) => {
 const handleMint = async () => {
     if (!blindboxContract || !mintAmount) return;
     const tx = await blindboxContract.mintToken(mintAmount, { value: ethers.utils.parseEther((mintAmount * tokenPrice).toString()) })
-    await tx.wait();
+    const receipt = await tx.wait();
+    if(receipt.status) {
+        setBalance((await blindboxContract.balanceOf(currentAddress)).toNumber());
+        setTotalSupply((await blindboxContract.settings()).totalSupply);
+    }
 
 }
 const timeDiff = saleStartTime*1000 - Date.now();
@@ -81,7 +86,7 @@ return (
                 <Box style={{ display: 'flex', flexDirection: 'column', gap: 40, padding: '20px' }}>
                     <Box style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <Box style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Button style={{ display: 'inline-flex', alignItems: 'center', fontSize: '0.6em', verticalAlign: 'middle', backgroundColor: '#eef3fb' }}><AccountBalanceWalletIcon style={{ marginRight: '10px' }} /> {balance} {symbol} <span style={{ marginLeft: '10px', color: '#57627b', backgroundColor: '#ffff', fontSize: '0.5em' }}>{currentAddress[0].slice(0, 10) + '...' + currentAddress[0].slice(-10)}</span></Button>
+                            <Button style={{ display: 'inline-flex', alignItems: 'center', fontSize: '0.6em', verticalAlign: 'middle', backgroundColor: '#eef3fb' }}><AccountBalanceWalletIcon style={{ marginRight: '10px' }} /> {balance} {symbol} <span style={{ marginLeft: '10px', color: '#57627b', backgroundColor: '#ffff', fontSize: '0.5em' }}>{currentAddress.slice(0, 10) + '...' + currentAddress.slice(-10)}</span></Button>
                             {openSeaCollectionSlug?
                                 <Link target='_blank' href={`https://testnets.opensea.io/collection/${openSeaCollectionSlug}`} style={{ fontSize: '0.5em' }}>➝ Browse collection on opensea</Link>
                             :<></>
