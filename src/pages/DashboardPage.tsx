@@ -8,7 +8,7 @@ import { create } from 'ipfs-http-client';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { RouteComponentProps, useHistory } from 'react-router';
 import LinearProgressWith from '../components/LinearProgressWithLabel';
-import { NFTBlindboxContext, ProviderContext } from '../hardhat/SymfoniContext';
+import { NFTBlindboxContext, ProviderContext,CurrentAddressContext } from '../hardhat/SymfoniContext';
 import { NFTBlindbox } from '../hardhat/typechain/NFTBlindbox';
 
 interface MatchParams {
@@ -37,9 +37,11 @@ const DashboardPage: React.FC<Props> = (props) => {
     const history = useHistory();
     const [provider,] = useContext(ProviderContext);
     const blindBox = useContext(NFTBlindboxContext);
+    const [currentAddress,] = useContext(CurrentAddressContext);
     const [ethValue, setEthValue] = useState<BigNumberish>(0);
     const [isReveal, setIsReveal] = useState<boolean>(false);
     const [blindboxContract, setBlindBoxContract] = useState<NFTBlindbox>();
+    const [tokenPrice,setTokenPrice] = useState<string>();
     const [baseURI, setBaseURI] = useState<string>();
     const [coverURI, setCoverURI] = useState<string>();
     const [maxSupply, setMaxSupply] = useState<number>(0);
@@ -61,6 +63,9 @@ const DashboardPage: React.FC<Props> = (props) => {
     const [reserveInputError, setReserveInputError] = useState(false);
     const [specialMintInputError, setSpecialMintInputError] = useState(false);
     const [specialMintId, setSpecialMintId] = useState<string>("");
+    const [transferToAddress,setTransferToAddres] = useState<string>("");
+    const [transferToId,setTransferToId] = useState<string>("");
+    const [transferIdInputError, setTransferToIdInputError] = useState(false);
     const [specialMintAddress, setSpecialMintAddress] = useState<string>("");
     const [alertText,setAlertText] = useState<string>("");
     const imageUploader = useCallback((node: HTMLInputElement) => {
@@ -105,6 +110,9 @@ const DashboardPage: React.FC<Props> = (props) => {
         };
         connectToContract();
     }, [blindBox, address, provider]);
+    const handleTokenPriceChange= (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setTokenPrice(e.target.value);
+    }
     const handleBaseURIChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setBaseURI(e.target.value);
     }
@@ -132,6 +140,27 @@ const DashboardPage: React.FC<Props> = (props) => {
         }
         setSpecialMintId(e.target.value)
         setSpecialMintInputError(false);
+
+    }
+    const handleTransferIdChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if (isNaN(parseInt(e.target.value))) {
+            setTransferToId(e.target.value)
+            setTransferToIdInputError(true);
+            return;
+        }
+        setTransferToId(e.target.value)
+        setTransferToIdInputError(false);
+
+    }
+
+    const handleSetTokenPrice = async  (e: React.SyntheticEvent) => {
+        e.preventDefault()
+        if (!tokenPrice || !blindboxContract) return;
+        const tx = await blindboxContract.setTokenPrice(ethers.utils.parseEther(tokenPrice));
+        const receipt = await tx.wait();
+        if (receipt.status) {
+            setTokenPrice("");
+        }
 
     }
     const handleSetCoverURI = async (e: React.SyntheticEvent) => {
@@ -165,7 +194,17 @@ const DashboardPage: React.FC<Props> = (props) => {
             setReserveAmount("");
         }
     }
-
+    const handleTransfer = async (e: React.SyntheticEvent) => {
+        e.preventDefault()
+        if(!transferToAddress || !blindboxContract || !currentAddress || !transferToAddress || !transferToId) return;
+        const tx = await blindboxContract.transferFrom(currentAddress,transferToAddress,transferToId);
+        const receipt = await tx.wait();
+        if (receipt.status) {
+            setAlertText(`Successfully Transfer TokenID: ${transferToId} to ${transferToAddress}!`)
+            setSnackOpen(true);
+        }
+        
+    }
     const handleSpecialMint = async (e: React.SyntheticEvent) => {
         e.preventDefault()
         if (!specialMintId || !blindboxContract) return;
@@ -497,6 +536,17 @@ const DashboardPage: React.FC<Props> = (props) => {
                                         </TableRow>
                                         <TableRow>
                                             <TableCell>
+                                                <Typography>Set Token Price: </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <form onSubmit={handleSetTokenPrice}>
+                                                    <TextField label="tokenPrice" variant="outlined" placeholder='ETH' size="small" style={{ width: '220px', marginRight: "10px" }} value={tokenPrice} onChange={handleTokenPriceChange} />
+                                                    <Button variant='contained' style={{ textTransform: 'none',backgroundColor:'#0666dc',color:'#fff'  }} type="submit">Submit</Button>
+                                                </form>
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
                                                 <Typography>Set Base URI: </Typography>
                                             </TableCell>
                                             <TableCell>
@@ -517,6 +567,7 @@ const DashboardPage: React.FC<Props> = (props) => {
                                                 </form>
                                             </TableCell>
                                         </TableRow>
+                                        
                                         <TableRow>
                                             <TableCell>
                                                 <Typography>Reserve:</Typography>
@@ -526,6 +577,20 @@ const DashboardPage: React.FC<Props> = (props) => {
                                                     <TextField label="reserve" variant="outlined" placeholder='amount' size="small" style={{ width: '220px', marginRight: "10px" }} value={reserveAmount} onChange={handleReserveAmountChange} error={reserveInputError} helperText={reserveInputError ? 'Please enter number' : ""} />
                                                     <Button variant='contained' style={{ textTransform: 'none',backgroundColor:'#0666dc',color:'#fff'  }} type="submit">Submit</Button>
                                                 </form>
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <Typography>Transfer: </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <form onSubmit={handleTransfer}>
+                                                    <TextField label='address' variant='outlined' placeholder='from: address' size="small" style={{ width: '220px', marginBottom: "10px" }} value={transferToAddress} onChange={(e)=>{setTransferToAddres(e.target.value)}}/>
+                                                    <TextField label="tokenId" variant="outlined" placeholder='tokenId' size="small" style={{ width: '220px', marginRight: "10px" }} value={transferToId} onChange={handleTransferIdChange} error={transferIdInputError} helperText={transferIdInputError ? 'Please enter number' : ""} />
+                                                    <Button variant='contained' style={{ textTransform: 'none',backgroundColor:'#0666dc',color:'#fff'  }} type="submit">Transfer</Button>
+                                                </form>
+                                                <span style={{ fontStyle: 'italic', fontWeight: 100, fontSize: '10px', marginRight: '15px' }}>You can only transfer NFT that you own.</span>
+                                                
                                             </TableCell>
                                         </TableRow>
                                         <TableRow>
